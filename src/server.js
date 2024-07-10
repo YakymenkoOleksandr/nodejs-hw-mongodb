@@ -1,6 +1,6 @@
 import pino from 'pino-http';
 import cors from 'cors';
-import { getAllStudents, getStudentById } from './services/students.js';
+import { getAllContacts, getContactsById } from './services/contacts.js';
 import { env } from './utils/env.js';
 import express from 'express';
 const PORT = Number(env('PORT', '3000'));
@@ -25,24 +25,27 @@ export const setupServer = () => {
     });
   });
 
-  app.get('/students', async (req, res) => {
+  app.get('/contacts', async (req, res) => {
     try {
-      const students = await getAllStudents();
+      const contacts = await getAllContacts();
       res.status(200).json({
-        data: students,
+        status: 'success',
+        message: 'Successfully found contacts!',
+        data: contacts,
       });
     } catch (error) {
       res.status(500).json({
-        message: 'Failed to fetch students',
+        status: 'error',
+        message: 'Failed to fetch contacts',
         error: error.message,
       });
     }
   });
 
-  app.get('/students/:studentId', async (req, res) => {
+  app.get('/contacts/:contactId', async (req, res) => {
     try {
       const { studentId } = req.params;
-      const student = await getStudentById(studentId);
+      const student = await getContactsById(studentId);
 
       if (!student) {
         return res.status(404).json({
@@ -75,6 +78,6 @@ export const setupServer = () => {
   });
 
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`running on port ${PORT}`);
   });
 };
