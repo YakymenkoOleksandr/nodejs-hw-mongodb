@@ -1,23 +1,27 @@
 import { getAllContacts, getContactById } from '../services/contacts.js';
 import createHttpError from 'http-errors';
 import { createContact,  deleteContact, updateContact } from '../services/contacts.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { parseFilterParams } from '../utils/parseFilterParams.js';
 
-export const getContactsController = async (
-  req,
-  res,
-	next,
-) => {
-	try {
-	  const contacts = await getAllContacts();
+export const getContactsController = async (req, res) => {
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+  const filter = parseFilterParams(req.query);
+  const students = await getAllContacts({
+    page,
+    perPage,
+    sortBy,
+    sortOrder,
+    filter,
+  });
 
-	  res.json({
-	    status: 200,
-	    message: 'Successfully found contacts!',
-	    data: contacts,
-	  });
-	} catch(err) {
-		next(err);
-	}
+  res.json({
+    status: 200,
+    message: 'Successfully found contacts!',
+    data: students,
+  });
 };
 
 export const getContactByIdController = async (req, res) => {
@@ -26,7 +30,6 @@ export const getContactByIdController = async (req, res) => {
 
 
   if (!contact) {
-    // 2. Створюємо та налаштовуємо помилку
     throw createHttpError(404, 'Contact not found');
   }
 
@@ -96,3 +99,4 @@ export const patchContactController = async (req, res, next) => {
     data: result.contact,
   });
 };
+
