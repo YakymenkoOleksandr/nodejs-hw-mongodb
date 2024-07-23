@@ -50,5 +50,4 @@ export const updateContactSchema = Joi.object({
     'any.only': 'ContactType must be one of [work, home, personal]',
     'any.required': 'ContactType is required',
   }).default('personal'),
-  parentId: Joi.string().required(),
 });
