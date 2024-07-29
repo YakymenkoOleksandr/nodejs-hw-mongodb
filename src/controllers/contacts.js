@@ -1,8 +1,18 @@
-import { getAllContacts, getContactById, createContact, deleteContact, updateContact } from '../services/contacts.js';
+import {
+  getAllContacts,
+  getContactById,
+  createContact,
+  deleteContact,
+  updateContact,
+} from '../services/contacts.js';
 import createHttpError from 'http-errors';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { env } from '../utils/env.js';
 
 export const getContactsController = async (req, res) => {
   const { page, perPage } = parsePaginationParams(req.query);
@@ -22,7 +32,6 @@ export const getContactsController = async (req, res) => {
     status: 200,
     message: 'Successfully found contacts!',
     data: contacts,
-
   });
 };
 
@@ -61,7 +70,12 @@ export const deleteContactController = async (req, res, next) => {
   const contact = await deleteContact(contactId, userId);
 
   if (!contact) {
-    return next(createHttpError(404, 'Contact not found or you are not authorized to delete it'));
+    return next(
+      createHttpError(
+        404,
+        'Contact not found or you are not authorized to delete it',
+      ),
+    );
   }
 
   res.status(204).send();
@@ -70,18 +84,41 @@ export const deleteContactController = async (req, res, next) => {
 export const patchContactController = async (req, res, next) => {
   const { contactId } = req.params;
   const userId = req.user._id;
+  const updateData = { ...req.body };
 
-  const contact = await updateContact(contactId, userId, req.body);
+  const photo = req.file;
 
-  if (!contact) {
-    return next(createHttpError(404, 'Contact not found'));
+  if (photo) {
+    try {
+      console.log(`ENABLE_CLOUDINARY: ${env('ENABLE_CLOUDINARY')}`);
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+        const photoUrl = await saveFileToCloudinary(photo);
+        updateData.photo = photoUrl;
+      } else {
+        const photoUrl = await saveFileToUploadDir(photo);
+        updateData.photo = photoUrl;
+      }
+    } catch (error) {
+      console.error('Failed to upload photo:', error);
+      return next(createHttpError(500, 'Failed to upload photo to Cloudinary'));
+    }
   }
 
-  res.json({
-    status: 200,
-    message: 'Successfully patched a contact!',
-    data: contact,
-  });
+  try {
+    const result = await updateContact(contactId, userId, updateData);
+    if (!result) {
+      return next(createHttpError(404, 'Contact not found'));
+    }
+
+    res.json({
+      status: 200,
+      message: 'Successfully patched a contact!',
+      data: result,
+    });
+  } catch (error) {
+    console.error('Error updating contact:', error);
+    next(error);
+  }
 };
 
 export const updateContactController = async (req, res, next) => {
@@ -92,7 +129,12 @@ export const updateContactController = async (req, res, next) => {
   const result = await updateContact(contactId, userId, updateData);
 
   if (!result || !result.contact) {
-    return next(createHttpError(404, 'Contact not found or you are not authorized to update it'));
+    return next(
+      createHttpError(
+        404,
+        'Contact not found or you are not authorized to update it',
+      ),
+    );
   }
 
   res.json({

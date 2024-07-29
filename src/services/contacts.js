@@ -13,16 +13,15 @@ export const getAllContacts = async ({
   const limit = perPage;
   const skip = (page - 1) * perPage;
 
-   const contactsQuery = ContactsCollection.find({ userId });
+  const contactsQuery = ContactsCollection.find({ userId });
 
-   if (filter.contactType) {
+  if (filter.contactType) {
     contactsQuery.where('contactType').equals(filter.contactType);
   }
 
-   if (filter.isFavourite !== undefined) {
+  if (filter.isFavourite !== undefined) {
     contactsQuery.where('isFavourite').equals(filter.isFavourite);
   }
-
 
   const [contactsCount, contacts] = await Promise.all([
     ContactsCollection.countDocuments({ userId, ...filter }),
@@ -46,7 +45,6 @@ export const getContactById = async (contactId, userId) => {
   return contact;
 };
 
-
 export const createContact = async (payload, userId) => {
   const contact = await ContactsCollection.create({
     ...payload,
@@ -57,21 +55,23 @@ export const createContact = async (payload, userId) => {
 
 export const deleteContact = async (contactId, userId) => {
   const contact = await ContactsCollection.findOneAndDelete({
-    _id: contactId, userId,
+    _id: contactId,
+    userId,
   });
 
   return contact;
 };
 
-export const updateContact = async (contactId, userId, payload, options = {}) => {
-  const contact = await ContactsCollection.findOneAndUpdate(
-    { _id: contactId, userId },
-    payload,
-    {
-      new: true,
-      ...options,
-    }
-  );
+export const updateContact = async (contactId, userId, updateData) => {
+  try {
+    const updatedContact = await ContactsCollection.findOneAndUpdate(
+      { _id: contactId, userId },
+      updateData,
+      { new: true },
+    );
 
-  return contact;
+    return updatedContact;
+  } catch (error) {
+    throw new Error('Failed to update contact');
+  }
 };
