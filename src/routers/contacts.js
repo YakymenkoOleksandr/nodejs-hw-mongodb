@@ -29,6 +29,10 @@ router.get('/:contactId', isValidId, ctrlWrapper(getContactByIdController));
 router.post(
   '/',
   upload.single('photo'),
+  (req, res, next) => {
+    console.log('File received:', req.file);
+    next();
+  },
   validateBody(createContactSchema),
   ctrlWrapper(createContactController),
 );
