@@ -10,6 +10,7 @@ tags:
   - name: Contacts
     description: 'Contact management operations'
 servers:
+  - url: https://localhost:3000
   - url: https://nodejs-hw-mongodb-s19d.onrender.com
 paths:
   /contacts:
