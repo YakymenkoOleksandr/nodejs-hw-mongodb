@@ -12,7 +12,6 @@ tags:
 servers:
   - url: https://nodejs-hw-mongodb-s19d.onrender.com
 paths:
-  # тут будуть посилання на ендпоінти
   /contacts:
     get:
       $ref: ../swagger/paths/contacts/get.yaml
@@ -21,6 +20,10 @@ paths:
   /contacts/{id}:
     get:
       $ref: ../swagger/paths/contacts/{id}/get.yaml
+    patch:
+      $ref: ../swagger/paths/contacts/{id}/patch.yaml
+    delete:
+      $ref: ../swagger/paths/contacts/{id}/delete.yaml
 
 components:
   securitySchemes:

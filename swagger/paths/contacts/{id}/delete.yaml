@@ -1,9 +1,8 @@
-# swagger/paths/studens/{id}/get.yaml
 tags:
   - Contacts
-summary: Get contact by id
-operationId: getContact
-description: 'Get contact by id'
+summary: Delete a contact
+operationId: deleteContact
+description: Deletes a contact by its ID.
 security:
   - bearerAuth: []
 parameters:
@@ -14,8 +13,10 @@ parameters:
       type: string
       example: '65ca67e7ae7f10c88b598384'
 responses:
-  '200':
-    description: 'Get contact by id'
+  '204':
+    description: Contact deleted successfully
+  '401':
+    description: Unauthorized error
     content:
       application/json:
         schema:
@@ -23,32 +24,20 @@ responses:
           required:
             - status
             - message
-            - data
           properties:
             status:
               type: integer
-              example: 200
+              example: 401
             message:
               type: string
-              example: Successfully found contact with id 65ca67e7ae7f10c88b598384!
-            data:
-              type: object
-              $ref: '../../../components/schemas/contact.yaml'
-  '401':
-    $ref: '../../../components/responses/401.yaml'
+              example: Unauthorized
   '404':
-    description: 'Contact not found'
+    description: Contact not found
     content:
       application/json:
         schema:
           type: object
-          required:
-            - status
-            - message
           properties:
-            status:
-              type: integer
-              example: 404
             message:
               type: string
               example: Contact not found
